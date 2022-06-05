@@ -2,24 +2,64 @@ import { useState, useEffect } from "react";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonsForm";
 import Ppersons from "./components/Pperson";
-import personService from "./service/persons";
+import personService from "./service/Persons";
 import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const [newPerson, setNewPerson] = useState({ name: "", number: "" });
-  const [filter, setFilter] = useState("");
+  const [newNameP, setNewNameP] = useState({ name: "", number: "" });
+  const [filterParam, setFilterParam] = useState("");
   const [personsToShow, setPersonsToShow] = useState([]);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    personService.getAll().then((initialPersons) => {
+    personService
+    .getAll()
+    .then((initialPersons) => {
       setPersons(initialPersons);
       setPersonsToShow(initialPersons);
     });
   }, []);
 
-  useEffect(() => {
+  
+  const addPerson = (event) => {
+    event
+    .preventDefault();
+    const currentPersonName = persons.filter(
+      (person) => person.name === newNameP.name
+    );
+
+    if (currentPersonName.length === 0) {
+      personService
+        .create(newNameP)
+        .then((returnedPerson) => {
+          setPersons(persons.concat(returnedPerson));
+          setPersonsToShow(persons.concat(returnedPerson));
+          setMessage(`Added ${newNameP.name} to phonebook`);
+        })
+        .catch((error) => setMessage(error.response.data.error));
+    } else {
+      if (
+        window.confirm(
+          `${newNameP.name} is already in the phonebook, do you want to replace the number?`
+        )
+      ) {
+        personService
+          .update(currentPersonName[0].id, newNameP)
+          .then((returnedPerson) => {
+            const updatedPerson = persons.map((person) =>
+              person.id !== returnedPerson.id ? person : returnedPerson
+            );
+            setPersons(updatedPerson);
+            setPersonsToShow(updatedPerson);
+            setMessage(`Updated ${newNameP.name}'s number`);
+          })
+          .catch((error) => setMessage(error.response.data.error));
+      }
+    }
+    setNewNameP({ name: "", number: "" });
+  };
+useEffect(() => {
     const timer = setTimeout(() => {
       setMessage(null);
     }, 5000);
@@ -27,43 +67,6 @@ const App = () => {
       clearTimeout(timer);
     };
   }, [message]);
-
-  const addPerson = (event) => {
-    event.preventDefault();
-    const currentName = persons.filter(
-      (person) => person.name === newPerson.name
-    );
-
-    if (currentName.length === 0) {
-      personService
-        .create(newPerson)
-        .then((returnedPerson) => {
-          setPersons(persons.concat(returnedPerson));
-          setPersonsToShow(persons.concat(returnedPerson));
-          setMessage(`Added ${newPerson.name} to phonebook`);
-        })
-        .catch((error) => setMessage(error.response.data.error));
-    } else {
-      if (
-        window.confirm(
-          `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
-        )
-      ) {
-        personService
-          .update(currentName[0].id, newPerson)
-          .then((returnedPerson) => {
-            const updatedPersons = persons.map((person) =>
-              person.id !== returnedPerson.id ? person : returnedPerson
-            );
-            setPersons(updatedPersons);
-            setPersonsToShow(updatedPersons);
-            setMessage(`Updated ${newPerson.name}'s number`);
-          })
-          .catch((error) => setMessage(error.response.data.error));
-      }
-    }
-    setNewPerson({ name: "", number: "" });
-  };
 
   const deletePerson = (id, name) => {
     if (window.confirm(`Delete ${name}?`)) {
@@ -78,12 +81,12 @@ const App = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setNewPerson({ ...newPerson, [name]: value });
+    setNewNameP({ ...newNameP, [name]: value });
   };
 
   const filterByName = (event) => {
     const search = event.target.value;
-    setFilter(search);
+    setFilterParam(search);
     setPersonsToShow(
       persons.filter((person) => person.name.toLowerCase().includes(search))
     );
@@ -93,10 +96,10 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       <Notification message={message} />
-      <Filter filter={filter} filterByName={filterByName} />
+      <Filter filterParam={filterParam} filterByName={filterByName} />
       <PersonForm
         addPerson={addPerson}
-        newPerson={newPerson}
+        newPerson={newNameP}
         handleChange={handleChange}
       />
       <h2>Numbers</h2>

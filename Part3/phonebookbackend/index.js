@@ -9,36 +9,36 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("build"));
 
-morgan.token("data", (request) => {
+morgan.token("person", (request) => {
   return request.method === "POST" ? JSON.stringify(request.body) : " ";
 });
 
 app.use(
-  morgan(":method :url :status :res[content-length] - :response-time ms :data")
+  morgan(":method :url :status :res[content-length] - :response-time ms :person")
 );
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/person", (anf, ant) => {
   Person.find({}).then((persons) => {
-    response.json(persons);
+    ant.json(persons);
   });
 });
 
-app.get("/api/persons/:id", (request, response, next) => {
-  Person.findById(request.params.id)
+app.get("/api/person/:id", (anf, ant, next) => {
+  Person.findById(anf.params.id)
     .then((person) => {
       if (person) {
-        response.json(person);
+        ant.json(person);
       } else {
-        response.status(404).end();
+        ant.status(404).end();
       }
     })
     .catch((error) => next(error));
 });
 
-app.get("/info", (request, response, next) => {
+app.get("/info", (anf, ant, next) => {
   Person.find({})
     .then((people) => {
-      response.send(
+      ant.send(
         `<p>Phonebook has info for ${
           people.length
         } people</p><p>${new Date()}</p>`
@@ -47,16 +47,16 @@ app.get("/info", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response, next) => {
-  Person.findByIdAndDelete(request.params.id)
+app.delete("/api/person/:id", (anf, ant, next) => {
+  Person.findByIdAndDelete(anf.params.id)
     .then(() => {
-      response.status(204).end();
+      ant.status(204).end();
     })
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response, next) => {
-  const { name, number } = request.body;
+app.post("/api/person", (anf, ant, next) => {
+  const { name, number } = anf.body;
 
   const person = new Person({
     name: name,
@@ -66,38 +66,38 @@ app.post("/api/persons", (request, response, next) => {
   person
     .save()
     .then((savedPerson) => {
-      response.json(savedPerson);
+      ant.json(savedPerson);
     })
     .catch((error) => next(error));
 });
 
-app.put("/api/persons/:id", (request, response, next) => {
-  const { name, number } = request.body;
+app.put("/api/person/:id", (anf, ant, next) => {
+  const { name, number } = anf.body;
 
   Person.findByIdAndUpdate(
-    request.params.id,
+    anf.params.id,
     { name, number },
     { new: true, runValidators: true, context: "query" }
   )
     .then((updatedPerson) => {
-      response.json(updatedPerson);
+      ant.json(updatedPerson);
     })
     .catch((error) => next(error));
 });
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
+const unknownEndpoint = (anf, ant) => {
+  ant.status(404).send({ error: "unknown endpoint" });
 };
 
 app.use(unknownEndpoint);
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, anf, ant, next) => {
   console.error(error.message);
 
   if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
+    return ant.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
-    return response.status(400).json({ error: error.message });
+    return ant.status(400).json({ error: error.message });
   }
 
   next(error);

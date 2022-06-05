@@ -1,13 +1,13 @@
-const PersonForm = ({ addPerson, newPerson, handleChange }) => {
+const PersonForm = ({ onSubmit, newNameP, handlePChange }) => {
     return (
-      <form onSubmit={addPerson}>
+      <form onSubmit={onSubmit}>
         <div>
           name:{" "}
-          <input name="name" value={newPerson.name} onChange={handleChange} />
+          <input name="name" value={newNameP.name} onChange={handlePChange} />
         </div>
         <div>
           number:{" "}
-          <input name="number" value={newPerson.number} onChange={handleChange} />
+          <input name="number" value={newNameP.number} onChange={handlePChange} />
         </div>
         <div>
           <button type="submit">add</button>

@@ -1,9 +1,14 @@
 {
   "persons": [
     {
-      "name": "deppisch",
-      "number": "13213",
+      "name": "Arto Hellas",
+      "number": "040-123456",
       "id": 1
+    },
+    {
+      "name": "Nils Deppisch",
+      "number": "39-123456",
+      "id": 2
     }
   ]
 }
